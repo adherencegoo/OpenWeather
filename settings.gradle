@@ -1,1 +1,4 @@
 include ':app'
+
+include ':XDDLib'
+project(':XDDLib').projectDir = new File(settingsDir, '../XDDLib')
