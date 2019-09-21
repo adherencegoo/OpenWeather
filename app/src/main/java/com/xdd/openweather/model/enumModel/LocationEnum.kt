@@ -27,9 +27,9 @@ enum class LocationEnum(override val remoteName: String) : IJsonEnum {
     PINGTUNG("屏東縣");
 
     companion object : IJsonEnum.ICompanion<LocationEnum> {
-        override val jsonTypeAdapter = object : IJsonEnum.JsonAdapter<LocationEnum>() {
-            override val enums: Array<LocationEnum>
-                get() = values()
-        }
+        override val nativeStringMap: Map<String, LocationEnum>
+            get() = enumList.map { it.toString() to it }.toMap()
+        override val enumList: List<LocationEnum>
+            get() = values().toList()
     }
 }

@@ -8,9 +8,9 @@ enum class WeatherElementEnum : IJsonEnum {
         get() = toString()
 
     companion object : IJsonEnum.ICompanion<WeatherElementEnum> {
-        override val jsonTypeAdapter = object : IJsonEnum.JsonAdapter<WeatherElementEnum>() {
-            override val enums: Array<WeatherElementEnum>
-                get() = values()
-        }
+        override val nativeStringMap: Map<String, WeatherElementEnum>
+            get() = enumList.map { it.toString() to it }.toMap()
+        override val enumList: List<WeatherElementEnum>
+            get() = values().toList()
     }
 }

@@ -7,9 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.xdd.openweather.databinding.EnumSelectorDialogBinding
 import com.xdd.openweather.databinding.EnumSelectorRowBinding
 import com.xdd.openweather.model.enumModel.IJsonEnum
@@ -23,6 +23,7 @@ class EnumSelectorDialog : DialogFragment() {
     companion object {
         val TAG = EnumSelectorDialog::class.java.simpleName
         private const val KEY_ENUM_CLASS = "keyEnumClass"
+        private const val KEY_KEEP_SELECTOR_STATE = "KEY_KEEP_SELECTOR_STATE"
 
         fun <T : IJsonEnum> newInstance(kClass: KClass<T>): EnumSelectorDialog {
             return EnumSelectorDialog().apply {
@@ -34,7 +35,11 @@ class EnumSelectorDialog : DialogFragment() {
     }
 
     class Adapter<T : IJsonEnum>(private val enumSelector: EnumSelector<T>) :
-        AbstractRecyclerViewAdapter<EnumSelectorRowBinding, T>(enumSelector.enums.toMutableList()) {
+        AbstractRecyclerViewAdapter<EnumSelectorRowBinding, T>(enumSelector.enumCompanion.enumList.toMutableList()) {
+
+        companion object {
+            val viewPool = RecyclerView.RecycledViewPool()
+        }
 
         override fun onBindData(binding: EnumSelectorRowBinding, data: T) {
             binding.enumSelector = enumSelector
@@ -45,29 +50,43 @@ class EnumSelectorDialog : DialogFragment() {
             EnumSelectorRowBinding.inflate(inflater, parent, false)!!
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val localActivity = activity ?: return super.onCreateDialog(savedInstanceState)
+    private fun getEnumSelector(): EnumSelector<*> {
+        val enumClass = arguments?.getUnserializable(KEY_ENUM_CLASS)
+            ?: error("Missing argument: KEY_ENUM_CLASS, arguments:$arguments")
 
-        return AlertDialog.Builder(localActivity)
-            .setView(createCustomView(localActivity))
-            .setPositiveButton(android.R.string.ok, null)
+        val viewModel = ViewModelProviders.of(requireActivity()).get(WeatherViewModel::class.java)
+        return viewModel.enumSelectorMap[enumClass] ?: error("Unexpected enumClass: $enumClass")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_KEEP_SELECTOR_STATE, true)
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val enumSelector = getEnumSelector()
+
+        // Enter if null or false
+        if (savedInstanceState?.getBoolean(KEY_KEEP_SELECTOR_STATE) != true) {
+            enumSelector.loadFromPreference(requireContext())
+        }
+
+        return AlertDialog.Builder(requireActivity())
+            .setView(createCustomView(enumSelector))
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                enumSelector.saveToPreference(requireActivity())
+            }
             .setNegativeButton(android.R.string.cancel, null)
             .create()
     }
 
-    private fun createCustomView(localActivity: FragmentActivity): View? {
-        val enumClass = arguments?.getUnserializable(KEY_ENUM_CLASS)
-            ?: error("Missing argument: KEY_ENUM_CLASS, arguments:$arguments")
-
-        val viewModel = ViewModelProviders.of(localActivity).get(WeatherViewModel::class.java)
-        val enumSelector =
-            viewModel.enumSelectorMap[enumClass] ?: error("Unexpected enumClass: $enumClass")
-
+    private fun createCustomView(enumSelector: EnumSelector<*>): View {
         val viewDataBinding =
-            EnumSelectorDialogBinding.inflate(LayoutInflater.from(localActivity), null, false)
+            EnumSelectorDialogBinding.inflate(LayoutInflater.from(requireContext()), null, false)
 
         viewDataBinding.paramsRecycler.apply {
             layoutManager = GridLayoutManager(context, 2)
+            setRecycledViewPool(Adapter.viewPool)
             adapter = Adapter(enumSelector)
         }
 

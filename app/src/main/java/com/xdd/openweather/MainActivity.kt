@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
             viewModel.updateForecasts(
-                locations = viewModel.locationSelector.getSelectedEnums(),
-                weatherElements = viewModel.weatherSelector.getSelectedEnums()
+                locations = viewModel.locationSelector.getActualSelected(this),
+                weatherElements = viewModel.weatherSelector.getActualSelected(this)
             )
         }
     }

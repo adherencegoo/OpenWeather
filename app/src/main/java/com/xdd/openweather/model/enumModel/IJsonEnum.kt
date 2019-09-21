@@ -31,20 +31,21 @@ interface IJsonEnum {
         // for conversion between enum class and Json
         fun decorateGsonBuilder(builder: GsonBuilder) {
             for ((enumClass, enumCompanion) in jsonEnums) {
-                builder.registerTypeAdapter(enumClass, enumCompanion.jsonTypeAdapter)
+                builder.registerTypeAdapter(enumClass, JsonAdapter(enumCompanion))
             }
         }
     }
 
     interface ICompanion<T : IJsonEnum> {
-        val jsonTypeAdapter: JsonAdapter<T>
+        val enumList: List<T>
+        val nativeStringMap: Map<String, T>
     }
 
-    abstract class JsonAdapter<T : IJsonEnum> : JsonSerializer<T>, JsonDeserializer<T> {
-        protected abstract val enums: Array<T>
+    class JsonAdapter<T : IJsonEnum>(private val enumCompanion: ICompanion<T>) : JsonSerializer<T>,
+        JsonDeserializer<T> {
 
         private val enumMap by lazy {
-            enums.map { it.remoteName to it }.toMap()
+            enumCompanion.enumList.map { it.remoteName to it }.toMap()
         }
 
         override fun serialize(

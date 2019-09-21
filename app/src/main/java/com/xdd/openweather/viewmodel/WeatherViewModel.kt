@@ -23,9 +23,9 @@ class WeatherViewModel : ViewModel() {
     val liveForecast: LiveData<Forecast>
         get() = _liveForecast
 
-    val locationSelector = EnumSelector(LocationEnum.values().toList())
+    val locationSelector = EnumSelector(LocationEnum.Companion)
 
-    val weatherSelector = EnumSelector(WeatherElementEnum.values().toList())
+    val weatherSelector = EnumSelector(WeatherElementEnum.Companion)
 
     val enumSelectorMap = mapOf(
         LocationEnum::class to locationSelector,
