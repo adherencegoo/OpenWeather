@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         viewDataBinding.contentMain.weatherViewModel = viewModel
 
         // set up RecyclerView and Adapter
-        val locWeatherAdapter = LocWeatherRecyclerAdapter()
+        val locWeatherAdapter = LocWeatherRecyclerAdapter(this)
         forecastRecycler.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = locWeatherAdapter

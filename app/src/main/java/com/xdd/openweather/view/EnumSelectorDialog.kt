@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,8 +35,14 @@ class EnumSelectorDialog : DialogFragment() {
         }
     }
 
-    class Adapter<T : IJsonEnum>(private val enumSelector: EnumSelector<T>) :
-        AbstractRecyclerViewAdapter<EnumSelectorRowBinding, T>(enumSelector.enumCompanion.enumList.toMutableList()) {
+    class Adapter<T : IJsonEnum>(
+        lifecycleOwner: LifecycleOwner,
+        private val enumSelector: EnumSelector<T>
+    ) :
+        AbstractRecyclerViewAdapter<EnumSelectorRowBinding, T>(
+            lifecycleOwner,
+            enumSelector.enumCompanion.enumList.toMutableList()
+        ) {
 
         companion object {
             val viewPool = RecyclerView.RecycledViewPool()
@@ -87,10 +94,12 @@ class EnumSelectorDialog : DialogFragment() {
         viewDataBinding.paramsRecycler.apply {
             layoutManager = GridLayoutManager(context, 2)
             setRecycledViewPool(Adapter.viewPool)
-            adapter = Adapter(enumSelector)
+            adapter = Adapter(this@EnumSelectorDialog, enumSelector)
         }
 
         viewDataBinding.enumSelector = enumSelector
+        // IMPORTANT !!!!!! so as to make BindingAdapter work correctly
+        viewDataBinding.lifecycleOwner = this
 
         return viewDataBinding.root
     }
