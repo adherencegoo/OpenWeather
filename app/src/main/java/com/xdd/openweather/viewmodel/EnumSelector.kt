@@ -1,36 +1,33 @@
 package com.xdd.openweather.viewmodel
 
 import android.content.Context
+import androidx.databinding.ObservableBoolean
 import com.xdd.openweather.model.enumModel.IJsonEnum
 
 class EnumSelector<T : IJsonEnum>(val enumCompanion: IJsonEnum.ICompanion<T>) {
-    private val tmpSelection = HashMap<T, Boolean>()
+    val currentSelection = enumCompanion.enumList.map { it to ObservableBoolean() }.toMap()
 
     private val preferenceKey = enumCompanion.javaClass.name
 
-    fun onSelectionChanged(jsonEnum: T, checked: Boolean) {
-        tmpSelection[jsonEnum] = checked
-    }
-
-    fun isTmpSelected(enum: T) = tmpSelection[enum] ?: false
-
-    private fun getTmpSelected() = tmpSelection.filterValues { it }.keys
+    private fun getCurrentSelected() = currentSelection.filterValues(ObservableBoolean::get).keys
 
     fun getActualSelected(context: Context) = getPreference(context)
         .getStringSet(preferenceKey, null)?.mapNotNull { enumCompanion.nativeStringMap[it] }
         ?: emptyList()
 
     fun loadFromPreference(context: Context) {
-        tmpSelection.clear()
+        currentSelection.values.forEach {
+            it.set(false)
+        }
         getActualSelected(context).forEach {
-            tmpSelection[it] = true
+            currentSelection[it]?.set(true)
         }
     }
 
     fun saveToPreference(context: Context) {
         getPreference(context).edit()
             .remove(preferenceKey)
-            .putStringSet(preferenceKey, getTmpSelected().map { it.toString() }.toSet())
+            .putStringSet(preferenceKey, getCurrentSelected().map { it.toString() }.toSet())
             .apply()
     }
 

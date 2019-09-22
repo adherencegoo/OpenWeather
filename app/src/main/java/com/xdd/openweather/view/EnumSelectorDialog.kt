@@ -42,7 +42,7 @@ class EnumSelectorDialog : DialogFragment() {
         }
 
         override fun onBindData(binding: EnumSelectorRowBinding, data: T) {
-            binding.enumSelector = enumSelector
+            binding.isEnumSelected = enumSelector.currentSelection[data]
             binding.jsonEnum = data
         }
 

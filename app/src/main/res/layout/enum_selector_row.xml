@@ -9,8 +9,8 @@
                 type="com.xdd.openweather.model.enumModel.IJsonEnum" />
 
         <variable
-                name="enumSelector"
-                type="com.xdd.openweather.viewmodel.EnumSelector" />
+                name="isEnumSelected"
+                type="androidx.databinding.ObservableBoolean" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -22,8 +22,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
-                android:checked="@{enumSelector.isTmpSelected(jsonEnum)}"
-                android:onCheckedChanged="@{(compoundButton, checked) -> enumSelector.onSelectionChanged(jsonEnum, checked)}"
+                android:checked="@={isEnumSelected}"
                 android:text="@{jsonEnum.remoteName}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
