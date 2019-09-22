@@ -90,6 +90,8 @@ class EnumSelectorDialog : DialogFragment() {
             adapter = Adapter(enumSelector)
         }
 
+        viewDataBinding.enumSelector = enumSelector
+
         return viewDataBinding.root
     }
 }
