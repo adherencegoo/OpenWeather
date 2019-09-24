@@ -1,24 +1,14 @@
 package com.xdd.openweather.viewmodel
 
 import android.content.Context
-import android.widget.ImageButton
-import androidx.databinding.BindingAdapter
 import androidx.databinding.Observable
+import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.xdd.openweather.R
-import androidx.databinding.ObservableBoolean
 import com.xdd.openweather.model.enumModel.IJsonEnum
 import com.xdd.openweather.utils.DiffLiveData
 
 class EnumSelector<T : IJsonEnum>(val enumCompanion: IJsonEnum.ICompanion<T>) {
-    companion object {
-        @JvmStatic
-        @BindingAdapter("decideSelectDeselectDrawable")
-        fun ImageButton.decideSelectDeselectDrawable(toSelect: Boolean?) {
-            setImageResource(if (toSelect == true) R.drawable.to_select_icon else R.drawable.to_deselect_icon)
-        }
-    }
 
     private val _toSelectAll = MutableLiveData<Boolean>()
 
