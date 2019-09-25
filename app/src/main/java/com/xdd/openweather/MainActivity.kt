@@ -21,7 +21,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewDataBinding =
-            DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+            DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)!!
+        viewDataBinding.lifecycleOwner = this
         setSupportActionBar(toolbar)
 
         val viewModel = ViewModelProviders.of(this).get(WeatherViewModel::class.java)
@@ -40,9 +41,7 @@ class MainActivity : AppCompatActivity() {
             locWeatherAdapter.postData(it.records.locationWeatherInfoList)
         })
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+        fab.setOnClickListener {
             viewModel.updateForecasts(
                 locations = viewModel.locationSelector.getActualSelected(this),
                 weatherElements = viewModel.weatherSelector.getActualSelected(this)
@@ -52,7 +51,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
+//        menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 

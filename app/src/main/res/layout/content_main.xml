@@ -5,6 +5,8 @@
 
     <data>
 
+        <import type="android.view.View" />
+
         <variable
                 name="weatherViewModel"
                 type="com.xdd.openweather.viewmodel.WeatherViewModel" />
@@ -62,7 +64,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:barrierDirection="bottom"
-                app:constraint_referenced_ids="selectLocationsBtn,selectWeatherBtn"/>
+                app:constraint_referenced_ids="selectLocationsBtn,selectWeatherBtn" />
+
+        <ProgressBar
+                android:id="@+id/progressbar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@android:color/holo_orange_dark"
+                android:indeterminate="true"
+                android:indeterminateTint="#1a09d6"
+                android:max="100"
+                android:visibility="@{weatherViewModel.liveLoading ? View.VISIBLE : View.INVISIBLE}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnBarrier" />
 
         <TextView
                 android:id="@+id/datasetDescription"
@@ -71,7 +87,7 @@
                 android:text="@{forecast.records.datasetDescription}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btnBarrier" />
+                app:layout_constraintTop_toBottomOf="@id/progressbar" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

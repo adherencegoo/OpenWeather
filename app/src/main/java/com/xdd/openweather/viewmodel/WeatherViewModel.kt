@@ -11,6 +11,7 @@ import com.xdd.openweather.model.enumModel.IJsonEnum
 import com.xdd.openweather.model.enumModel.LocationEnum
 import com.xdd.openweather.model.enumModel.WeatherElementEnum
 import com.xdd.openweather.retrofit.OpenWeatherRetro
+import com.xdd.openweather.utils.DiffLiveData
 import com.xdd.openweather.view.EnumSelectorDialog
 import retrofit2.Call
 import retrofit2.Callback
@@ -18,6 +19,11 @@ import retrofit2.Response
 import kotlin.reflect.KClass
 
 class WeatherViewModel : ViewModel() {
+    private val _liveLoading = DiffLiveData(MutableLiveData<Boolean>())
+
+    val liveLoading: LiveData<Boolean>
+        get() = _liveLoading
+
     private val _liveForecast = MutableLiveData<Forecast>()
 
     val liveForecast: LiveData<Forecast>
@@ -38,14 +44,17 @@ class WeatherViewModel : ViewModel() {
         locations: Collection<LocationEnum>? = null,
         weatherElements: Collection<WeatherElementEnum>? = null
     ) {
+        _liveLoading.postValue(true)
         OpenWeatherRetro.apiService.getForecast(limit, offset, locations, weatherElements)
             .enqueue(object : Callback<Forecast> {
                 override fun onFailure(call: Call<Forecast>, t: Throwable) {
                     Lg.e(t)//xdd
+                    _liveLoading.postValue(false)
                 }
 
                 override fun onResponse(call: Call<Forecast>, response: Response<Forecast>) {
                     _liveForecast.postValue(response.body())
+                    _liveLoading.postValue(false)
                 }
             })
     }
