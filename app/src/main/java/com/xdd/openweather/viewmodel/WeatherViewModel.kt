@@ -2,6 +2,7 @@ package com.xdd.openweather.viewmodel
 
 import android.view.View
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,6 +14,7 @@ import com.xdd.openweather.model.enumModel.WeatherElementEnum
 import com.xdd.openweather.retrofit.OpenWeatherRetro
 import com.xdd.openweather.utils.DiffLiveData
 import com.xdd.openweather.view.EnumSelectorDialog
+import com.xdd.openweather.view.ErrorDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -42,13 +44,15 @@ class WeatherViewModel : ViewModel() {
         limit: Int? = null,
         offset: Int? = null,
         locations: Collection<LocationEnum>? = null,
-        weatherElements: Collection<WeatherElementEnum>? = null
+        weatherElements: Collection<WeatherElementEnum>? = null,
+        failureHandler: ((Call<Forecast>, Throwable) -> Unit)? = null
     ) {
         _liveLoading.postValue(true)
         OpenWeatherRetro.apiService.getForecast(limit, offset, locations, weatherElements)
             .enqueue(object : Callback<Forecast> {
                 override fun onFailure(call: Call<Forecast>, t: Throwable) {
                     Lg.e(t)//xdd
+                    failureHandler?.invoke(call, t)
                     _liveLoading.postValue(false)
                 }
 
@@ -74,5 +78,13 @@ class WeatherViewModel : ViewModel() {
             // will also commit the transaction
             EnumSelectorDialog.newInstance(kClass).show(transaction, EnumSelectorDialog.TAG)
         }
+    }
+
+    fun openErrorDialog(manager: FragmentManager, throwable: Throwable) {
+        val transaction = manager.beginTransaction()
+
+        manager.findFragmentByTag(ErrorDialog.TAG)?.let(transaction::remove)
+
+        ErrorDialog.newInstance(throwable).show(transaction, ErrorDialog.TAG)
     }
 }

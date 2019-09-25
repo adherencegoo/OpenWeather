@@ -37,14 +37,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.liveForecast.observe(this, Observer {
-            viewDataBinding.contentMain.forecast = it
-            locWeatherAdapter.postData(it.records.locationWeatherInfoList)
+            if (it == null) {
+                viewModel.openErrorDialog(this.supportFragmentManager, RuntimeException("Null Forecast data"))
+            } else {
+                viewDataBinding.contentMain.forecast = it
+                locWeatherAdapter.postData(it.records.locationWeatherInfoList)
+            }
         })
 
         fab.setOnClickListener {
             viewModel.updateForecasts(
                 locations = viewModel.locationSelector.getActualSelected(this),
-                weatherElements = viewModel.weatherSelector.getActualSelected(this)
+                weatherElements = viewModel.weatherSelector.getActualSelected(this),
+                failureHandler = {_, t ->
+                    viewModel.openErrorDialog(this.supportFragmentManager, t)
+                }
             )
         }
     }
