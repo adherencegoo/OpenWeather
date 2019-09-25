@@ -66,4 +66,6 @@ interface IJsonEnum {
     }
 
     val remoteName: String
+
+    val localName: String
 }

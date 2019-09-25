@@ -2,7 +2,10 @@ package com.xdd.openweather.model.enumModel
 
 
 @Suppress("SpellCheckingInspection", "unused")
-enum class LocationEnum(override val remoteName: String) : IJsonEnum {
+enum class LocationEnum(
+    override val remoteName: String,
+    override val localName: String = remoteName
+) : IJsonEnum {
     YILAN("宜蘭縣"),
     HUALIEN("花蓮縣"),
     TAITUNG("臺東縣"),

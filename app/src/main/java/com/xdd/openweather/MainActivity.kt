@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.xdd.openweather.databinding.ActivityMainBinding
@@ -30,10 +31,12 @@ class MainActivity : AppCompatActivity() {
         val locWeatherAdapter = LocWeatherRecyclerAdapter(this)
         forecastRecycler.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
+            addItemDecoration(DividerItemDecoration(this@MainActivity, DividerItemDecoration.VERTICAL))
             adapter = locWeatherAdapter
         }
 
         viewModel.liveForecast.observe(this, Observer {
+            viewDataBinding.contentMain.forecast = it
             locWeatherAdapter.postData(it.records.locationWeatherInfoList)
         })
 

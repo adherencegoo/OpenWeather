@@ -17,9 +17,12 @@ abstract class AbstractRecyclerViewAdapter<BD : ViewDataBinding, T : Any>(
 
     private val refLifecycleOwner = WeakReference(lifecycleOwner)
 
+    protected val mLifecycleOwner: LifecycleOwner?
+        get() = refLifecycleOwner.get()
+
     final override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder<BD> =
         ViewHolder(onCreateBinding(LayoutInflater.from(parent.context), parent).apply {
-            lifecycleOwner = refLifecycleOwner.get()
+            lifecycleOwner = mLifecycleOwner
         })
 
     final override fun getItemCount(): Int = dataList.size

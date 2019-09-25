@@ -10,6 +10,10 @@
                 type="com.xdd.openweather.viewmodel.WeatherViewModel" />
 
         <import type="com.xdd.openweather.model.enumModel.LocationEnum" />
+
+        <variable
+                name="forecast"
+                type="com.xdd.openweather.model.Forecast" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,37 +25,53 @@
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/forecastRecycler"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="192dp"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/datasetDescription" />
 
         <Button
-                android:id="@+id/queryLocationsBtn"
+                android:id="@+id/selectLocationsBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:onClick="@{weatherViewModel::openLocationSelectorDialog}"
-                android:text="Locations"
-                app:layout_constraintEnd_toStartOf="@+id/button"
+                android:text="縣市"
+                app:layout_constraintEnd_toStartOf="@+id/selectWeatherBtn"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-                android:id="@+id/button"
+                android:id="@+id/selectWeatherBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:onClick="@{weatherViewModel::openWeatherSelectorDialog}"
-                android:text="Weather Elements"
+                android:text="天氣因素"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/queryLocationsBtn"
+                app:layout_constraintStart_toEndOf="@+id/selectLocationsBtn"
                 app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/btnBarrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="selectLocationsBtn,selectWeatherBtn"/>
+
+        <TextView
+                android:id="@+id/datasetDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{forecast.records.datasetDescription}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btnBarrier" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
