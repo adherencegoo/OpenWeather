@@ -13,6 +13,7 @@ import com.xdd.openweather.model.Forecast
 import com.xdd.openweather.model.enumModel.IJsonEnum
 import com.xdd.openweather.model.enumModel.LocationEnum
 import com.xdd.openweather.model.enumModel.WeatherElementEnum
+import com.xdd.openweather.retrofit.OpenWeatherRetro
 import com.xdd.openweather.utils.DiffLiveData
 import com.xdd.openweather.utils.open
 import com.xdd.openweather.view.AuthorizationDialog
@@ -34,40 +35,42 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     val liveForecast: LiveData<Forecast>
         get() = _liveForecast
 
-    val locationSelector = EnumSelector(LocationEnum.Companion)
+    private val locationSelector = EnumSelector(LocationEnum.Companion)
 
-    val weatherSelector = EnumSelector(WeatherElementEnum.Companion)
+    private val weatherSelector = EnumSelector(WeatherElementEnum.Companion)
 
     val enumSelectorMap = mapOf(
         LocationEnum::class to locationSelector,
         WeatherElementEnum::class to weatherSelector
     )
 
-    /**
-     * @param errorCallback handle failure or wrong response
-     * */
-    fun updateForecasts(
-        limit: Int? = null,
-        offset: Int? = null,
-        locations: Collection<LocationEnum>? = null,
-        weatherElements: Collection<WeatherElementEnum>? = null,
-        errorCallback: Callback<Forecast>? = null
-    ) {
+    fun updateForecasts(view: View) {
+        val fragmentActivity = view.context as FragmentActivity
+
         _liveLoading.postValue(true)
         getApplication<BaseApp>().openWeatherRetro.apiService.getForecast(
-            limit,
-            offset,
-            locations,
-            weatherElements
+            locations = locationSelector.getActualSelected(fragmentActivity),
+            weatherElements = weatherSelector.getActualSelected(fragmentActivity)
         ).enqueue(object : Callback<Forecast> {
             override fun onFailure(call: Call<Forecast>, t: Throwable) {
                 Lg.e(t)//xdd
-                errorCallback?.onFailure(call, t)
+
+                ErrorDialog.newInstance(t)
+                    .open(fragmentActivity.supportFragmentManager, ErrorDialog.TAG)
                 _liveLoading.postValue(false)
             }
 
             override fun onResponse(call: Call<Forecast>, response: Response<Forecast>) {
-                errorCallback?.onResponse(call, response)
+                if (OpenWeatherRetro.Error.codeMap[response.code()] == OpenWeatherRetro.Error.NO_AUTHORIZATION) {
+                    AuthorizationDialog().open(
+                        fragmentActivity.supportFragmentManager,
+                        AuthorizationDialog.TAG
+                    )
+                } else if (response.body() == null) {
+                    ErrorDialog.newInstance(RuntimeException("Null Forecast data"))
+                        .open(fragmentActivity.supportFragmentManager, ErrorDialog.TAG)
+                }
+
                 _liveForecast.postValue(response.body())
                 _liveLoading.postValue(false)
             }

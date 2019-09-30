@@ -12,8 +12,6 @@ import com.xdd.openweather.viewmodel.AuthorizationViewModel
 class AuthorizationDialog : DialogFragment() {
     companion object {
         val TAG = AuthorizationDialog::class.java.simpleName
-
-        fun newInstance() = AuthorizationDialog()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
