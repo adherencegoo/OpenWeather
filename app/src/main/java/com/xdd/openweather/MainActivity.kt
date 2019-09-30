@@ -9,12 +9,19 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
 import com.xdd.openweather.databinding.ActivityMainBinding
+import com.xdd.openweather.model.Forecast
+import com.xdd.openweather.retrofit.OpenWeatherRetro
+import com.xdd.openweather.utils.open
+import com.xdd.openweather.view.AuthorizationDialog
+import com.xdd.openweather.view.ErrorDialog
 import com.xdd.openweather.view.LocWeatherRecyclerAdapter
 import com.xdd.openweather.viewmodel.WeatherViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,25 +39,39 @@ class MainActivity : AppCompatActivity() {
         val locWeatherAdapter = LocWeatherRecyclerAdapter(this)
         forecastRecycler.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
-            addItemDecoration(DividerItemDecoration(this@MainActivity, DividerItemDecoration.VERTICAL))
+            addItemDecoration(
+                DividerItemDecoration(
+                    this@MainActivity,
+                    DividerItemDecoration.VERTICAL
+                )
+            )
             adapter = locWeatherAdapter
         }
 
         viewModel.liveForecast.observe(this, Observer {
-            if (it == null) {
-                viewModel.openErrorDialog(this.supportFragmentManager, RuntimeException("Null Forecast data"))
-            } else {
-                viewDataBinding.contentMain.forecast = it
-                locWeatherAdapter.postData(it.records.locationWeatherInfoList)
-            }
+            viewDataBinding.contentMain.forecast = it
+            locWeatherAdapter.postData(it?.records?.locationWeatherInfoList ?: emptyList())
         })
 
         fab.setOnClickListener {
+            val fragmentManager = supportFragmentManager
             viewModel.updateForecasts(
                 locations = viewModel.locationSelector.getActualSelected(this),
                 weatherElements = viewModel.weatherSelector.getActualSelected(this),
-                failureHandler = {_, t ->
-                    viewModel.openErrorDialog(this.supportFragmentManager, t)
+                errorCallback = object : Callback<Forecast> {
+                    override fun onFailure(call: Call<Forecast>, t: Throwable) {
+                        ErrorDialog.newInstance(t).open(fragmentManager, ErrorDialog.TAG)
+                    }
+
+                    override fun onResponse(call: Call<Forecast>, response: Response<Forecast>) {
+                        if (OpenWeatherRetro.Error.codeMap[response.code()] == OpenWeatherRetro.Error.NO_AUTHORIZATION) {
+                            AuthorizationDialog.newInstance()
+                                .open(fragmentManager, AuthorizationDialog.TAG)
+                        } else if (response.body() == null) {
+                            ErrorDialog.newInstance(RuntimeException("Null Forecast data"))
+                                .open(fragmentManager, ErrorDialog.TAG)
+                        }
+                    }
                 }
             )
         }

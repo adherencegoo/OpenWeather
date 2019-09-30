@@ -1,27 +1,56 @@
 package com.xdd.openweather.retrofit
 
+import android.content.Context
+import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
 import com.xdd.openweather.AppExecutors
 import com.xdd.openweather.model.Forecast
 import com.xdd.openweather.model.enumModel.IJsonEnum
 import com.xdd.openweather.model.enumModel.LocationEnum
 import com.xdd.openweather.model.enumModel.WeatherElementEnum
-import okhttp3.OkHttpClient
+import okhttp3.*
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import java.lang.ref.WeakReference
 
-object OpenWeatherRetro {
-    private const val AUTHORITY_KEY = "CWB-24EB0548-6442-49A6-AA1F-B515C6AF7ABA"
-    private const val BASE_URL = "https://opendata.cwb.gov.tw/api/v1/rest/datastore/"
+class OpenWeatherRetro(context: Context) {
+    companion object {
+        private const val KEY_AUTHORIZATION = "Authorization"
+        private const val BASE_URL = "https://opendata.cwb.gov.tw/api/v1/rest/datastore/"
+    }
+
+    enum class Error(val code: Int) {
+        NO_AUTHORIZATION(877);
+
+        companion object {
+            val codeMap = values().map { it.code to it }.toMap()
+        }
+    }
+
+    private val refContext = WeakReference(context)
 
     private val interceptedHttpClient = OkHttpClient.Builder().addInterceptor { chain ->
-        val newRequest = chain.request().newBuilder()
-            .addHeader("Authorization", AUTHORITY_KEY)
-            .build()
-        chain.proceed(newRequest)
+        val authorizationValue = getAuthorization()
+
+        if (authorizationValue != null) {
+            val newRequest = chain.request().newBuilder()
+                .addHeader(KEY_AUTHORIZATION, authorizationValue)
+                .build()
+            chain.proceed(newRequest)
+        } else {
+            Response.Builder()
+                .code(Error.NO_AUTHORIZATION.code)
+                .protocol(Protocol.HTTP_2)
+                .message("Dummy response")
+                .request(chain.request())
+                .body(ResponseBody.create(MediaType.get("text/html; charset=utf-8"), ""))
+                .build()
+//            throw IOException("NO_AUTHORIZATION")
+        }
+
     }.build()
 
     private val gson = GsonBuilder().also {
@@ -48,4 +77,18 @@ object OpenWeatherRetro {
         .callbackExecutor(AppExecutors.networkExecutor)
         .build()
         .create(ApiService::class.java)
+
+    private fun getAuthorization() = refContext.get()?.let {
+        PreferenceManager.getDefaultSharedPreferences(it)
+    }?.getString(KEY_AUTHORIZATION, null)
+
+    fun setAuthorization(auth: String?) {
+        val preference = refContext.get()?.let {
+            PreferenceManager.getDefaultSharedPreferences(it)
+        } ?: return
+
+        preference.edit()
+            .putString(KEY_AUTHORIZATION, auth)
+            .apply()
+    }
 }
