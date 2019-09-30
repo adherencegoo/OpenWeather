@@ -38,9 +38,9 @@ class EnumSelector<T : IJsonEnum>(val enumCompanion: IJsonEnum.ICompanion<T>) {
         currentSelection.values.forEach {
             it.set(false)
         }
-        getActualSelected(context).forEach {
+        getActualSelected(context).takeIf { it.isNotEmpty() }?.forEach {
             currentSelection[it]?.set(true)
-        }
+        } ?: notifyCurrentSelectionChanged()
     }
 
     fun saveToPreference(context: Context) {
