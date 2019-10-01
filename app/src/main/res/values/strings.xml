@@ -2,4 +2,6 @@
     <string name="app_name">OpenWeather</string>
     <string name="action_settings">Settings</string>
     <string name="authorizationTutorial">1. 進入 https://opendata.cwb.gov.tw/index\n2. 登入/註冊\n3. 取得授權碼</string>
+    <string name="authorizationTitle">氣象開放資料平台會員授權碼</string>
+    <string name="authorizationKey" translatable="false">Authorization</string>
 </resources>

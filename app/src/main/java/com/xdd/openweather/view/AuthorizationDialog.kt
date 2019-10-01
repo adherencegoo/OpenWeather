@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProviders
+import com.xdd.openweather.R
 import com.xdd.openweather.databinding.AuthorizationDialogBinding
 import com.xdd.openweather.viewmodel.AuthorizationViewModel
 
@@ -29,7 +30,7 @@ class AuthorizationDialog : DialogFragment() {
         }
 
         return AlertDialog.Builder(localContext)
-            .setTitle("氣象開放資料平台會員授權碼")
+            .setTitle(R.string.authorizationTitle)
             .setView(binding.root)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 authViewModel.setAuthorization()

@@ -14,7 +14,13 @@ class MainActivity : AppCompatActivity() {
         val viewDataBinding =
             DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)!!
         viewDataBinding.lifecycleOwner = this
-        setSupportActionBar(toolbar)
+
+        toolbar?.also {
+            setSupportActionBar(it)
+            it.setNavigationOnClickListener {
+                onBackPressed()
+            }
+        }
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.mainContainer, WeatherFragment(), WeatherFragment.TAG)

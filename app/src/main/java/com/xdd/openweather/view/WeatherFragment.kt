@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xdd.openweather.R
 import com.xdd.openweather.databinding.WeatherFragmentBinding
+import com.xdd.openweather.utils.updateActionBar
 import com.xdd.openweather.viewmodel.WeatherViewModel
 
 class WeatherFragment : Fragment() {
@@ -45,12 +46,14 @@ class WeatherFragment : Fragment() {
             locWeatherAdapter.postData(it?.records?.locationWeatherInfoList ?: emptyList())
         })
 
+        updateActionBar()
+
         return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-//        inflater.inflate(R.menu.menu_main, menu)
+        inflater.inflate(R.menu.menu_main, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -58,7 +61,15 @@ class WeatherFragment : Fragment() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_settings -> {
+                fragmentManager?.beginTransaction()?.apply {
+                    replace(R.id.mainContainer, SettingsFragment(), SettingsFragment.TAG)
+                    addToBackStack(null)
+                    commit()
+                }
+
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }

@@ -2,8 +2,10 @@ package com.xdd.openweather.retrofit
 
 import android.content.Context
 import androidx.preference.PreferenceManager
+import com.example.xddlib.presentation.Lg
 import com.google.gson.GsonBuilder
 import com.xdd.openweather.AppExecutors
+import com.xdd.openweather.R
 import com.xdd.openweather.model.Forecast
 import com.xdd.openweather.model.enumModel.IJsonEnum
 import com.xdd.openweather.model.enumModel.LocationEnum
@@ -18,9 +20,10 @@ import java.lang.ref.WeakReference
 
 class OpenWeatherRetro(context: Context) {
     companion object {
-        private const val KEY_AUTHORIZATION = "Authorization"
         private const val BASE_URL = "https://opendata.cwb.gov.tw/api/v1/rest/datastore/"
     }
+
+    private val authorizationKey = context.getString(R.string.authorizationKey)
 
     enum class Error(val code: Int) {
         NO_AUTHORIZATION(877);
@@ -33,14 +36,14 @@ class OpenWeatherRetro(context: Context) {
     private val refContext = WeakReference(context)
 
     private val interceptedHttpClient = OkHttpClient.Builder().addInterceptor { chain ->
-        val authorizationValue = getAuthorization()
 
-        if (authorizationValue != null) {
+        kotlin.runCatching {
             val newRequest = chain.request().newBuilder()
-                .addHeader(KEY_AUTHORIZATION, authorizationValue)
+                .addHeader(authorizationKey, getAuthorization()!!)
                 .build()
             chain.proceed(newRequest)
-        } else {
+        }.getOrElse {
+            Lg.e(it)
             Response.Builder()
                 .code(Error.NO_AUTHORIZATION.code)
                 .protocol(Protocol.HTTP_2)
@@ -78,9 +81,9 @@ class OpenWeatherRetro(context: Context) {
         .build()
         .create(ApiService::class.java)
 
-    private fun getAuthorization() = refContext.get()?.let {
+    fun getAuthorization() = refContext.get()?.let {
         PreferenceManager.getDefaultSharedPreferences(it)
-    }?.getString(KEY_AUTHORIZATION, null)
+    }?.getString(authorizationKey, null)
 
     fun setAuthorization(auth: String?) {
         val preference = refContext.get()?.let {
@@ -88,7 +91,7 @@ class OpenWeatherRetro(context: Context) {
         } ?: return
 
         preference.edit()
-            .putString(KEY_AUTHORIZATION, auth)
+            .putString(authorizationKey, auth)
             .apply()
     }
 }
