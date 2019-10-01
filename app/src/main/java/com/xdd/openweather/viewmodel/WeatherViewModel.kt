@@ -2,6 +2,7 @@ package com.xdd.openweather.viewmodel
 
 import android.app.Application
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.AndroidViewModel
@@ -9,6 +10,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.xddlib.presentation.Lg
 import com.xdd.openweather.BaseApp
+import com.xdd.openweather.R
 import com.xdd.openweather.model.Forecast
 import com.xdd.openweather.model.enumModel.IJsonEnum
 import com.xdd.openweather.model.enumModel.LocationEnum
@@ -16,9 +18,7 @@ import com.xdd.openweather.model.enumModel.WeatherElementEnum
 import com.xdd.openweather.retrofit.OpenWeatherRetro
 import com.xdd.openweather.utils.DiffLiveData
 import com.xdd.openweather.utils.open
-import com.xdd.openweather.view.AuthorizationDialog
-import com.xdd.openweather.view.EnumSelectorDialog
-import com.xdd.openweather.view.ErrorDialog
+import com.xdd.openweather.view.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -62,9 +62,20 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
 
             override fun onResponse(call: Call<Forecast>, response: Response<Forecast>) {
                 if (OpenWeatherRetro.Error.codeMap[response.code()] == OpenWeatherRetro.Error.NO_AUTHORIZATION) {
-                    AuthorizationDialog().open(
+                    val alertBuilder = AlertDialog.Builder(fragmentActivity)
+                        .setTitle(R.string.authorizationTitle)
+                        .setMessage("錯誤的授權碼")
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            fragmentActivity.supportFragmentManager
+                                .beginTransaction()
+                                .replace(R.id.mainContainer, SettingsFragment(), SettingsFragment.TAG)
+                                .addToBackStack(null)
+                                .commit()
+                        }!!
+
+                    AlertFragment(alertBuilder).open(
                         fragmentActivity.supportFragmentManager,
-                        AuthorizationDialog.TAG
+                        AlertFragment.TAG
                     )
                 } else if (response.body() == null) {
                     ErrorDialog.newInstance(RuntimeException("Null Forecast data"))

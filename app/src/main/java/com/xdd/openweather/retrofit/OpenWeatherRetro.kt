@@ -38,8 +38,10 @@ class OpenWeatherRetro(context: Context) {
     private val interceptedHttpClient = OkHttpClient.Builder().addInterceptor { chain ->
 
         kotlin.runCatching {
+            val auth = getAuthorization()?.takeIf { it.isNotEmpty() }
+                ?: throw RuntimeException(Error.NO_AUTHORIZATION.name)
             val newRequest = chain.request().newBuilder()
-                .addHeader(authorizationKey, getAuthorization()!!)
+                .addHeader(authorizationKey, auth)
                 .build()
             chain.proceed(newRequest)
         }.getOrElse {
